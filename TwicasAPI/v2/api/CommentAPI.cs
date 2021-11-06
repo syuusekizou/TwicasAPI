@@ -184,8 +184,7 @@ namespace TwicasAPI.v2.api
         /// <returns>取得コメントのリスト</returns>
         public List<(string, string)> GetComments(int limit = 10)
         {
-            var response = GetResponse(limit);
-            return response.Comments.Select(x => (id: x.Id, message: x.Message)).ToList();
+            return GetComments(GetResponse(limit));
         }
 
         /// <summary>
@@ -195,6 +194,16 @@ namespace TwicasAPI.v2.api
         public void SaveComments(List<(string, string)> input)
         {
             Comments.AddRange(input);
+            Comments = Comments.Distinct().ToList();
+        }
+
+        /// <summary>
+        /// コメントを保存する
+        /// </summary>
+        /// <param name="input">コメントオブジェクト</param>
+        public void SaveComments(Comment input)
+        {
+            Comments.Add((input.Id,input.Message));
             Comments = Comments.Distinct().ToList();
         }
 
