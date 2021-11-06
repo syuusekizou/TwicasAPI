@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -16,6 +17,11 @@ namespace TwicasAPI.v2.api
             normal,
             reply
         }
+
+        /// <summary>
+        /// 取得コメント数最大値
+        /// </summary>
+        public const int MAX_COMMENT = 50;
         #endregion
 
         #region プロパティ
@@ -31,6 +37,11 @@ namespace TwicasAPI.v2.api
                 return ++Length;
             }
         }
+
+        /// <summary>
+        /// 保存済みコメント一覧
+        /// </summary>
+        private List<(string id, string message)> Comments { get; set; } = new List<(string, string)>();
         #endregion
 
         #region コンストラクタ
@@ -60,7 +71,7 @@ namespace TwicasAPI.v2.api
                 AuthorizationIndex = base.AuthorizationIndex
             };
             var result = SendRequest(param);
-            return GetResponseObject<PostCommentResponse>(result);
+            return Deserialize<PostCommentResponse>(result);
         }
 
         /// <summary>
@@ -122,6 +133,89 @@ namespace TwicasAPI.v2.api
                 result.Append(GetRandom());
             }
             return result.ToString();
+        }
+
+        /// <summary>
+        /// コメントを作成日時の降順で取得する。
+        /// </summary>
+        /// <param name="movie_id">ライブID</param>
+        /// <param name="offset">先頭からの位置</param>
+        /// <param name="limit">取得件数(場合により、指定件数に満たない数のコメントを返す可能性があります)</param>
+        /// <param name="slice_id">このコメントID以降のコメントを取得します。このパラメータを指定した場合はoffsetは無視されます。</param>
+        /// <returns>取得コメント</returns>
+        public GetCommentResponse GetComment(string movie_id, int offset = 0, int limit = 10, string slice_id = null)
+        {
+            var sliceId = string.IsNullOrWhiteSpace(slice_id) ? string.Empty : $"&slice_id={slice_id}";
+            var param = new Parameter
+            {
+                Method = HttpMethod.Get,
+                Request = $"/movies/{movie_id}/comments?offset={offset}&limit={limit}{sliceId}",
+                Config = base.Config,
+                AuthorizationIndex = base.AuthorizationIndex
+            };
+            var result = SendRequest(param);
+            return Deserialize<GetCommentResponse>(result);
+        }
+
+        /// <summary>
+        /// コメントを作成日時の降順で取得する。
+        /// </summary>
+        /// <returns>取得コメント</returns>
+        public GetCommentResponse GetResponse(int limit = 10)
+        {
+            var user = new UserAPI(this.Path);
+            var movieId = user.GetLastMovieId();
+            return GetComment(movieId, limit: limit);
+        }
+
+        /// <summary>
+        /// 取得コメントのリストを取得する
+        /// </summary>
+        /// <param name="input">取得コメント</param>
+        /// <returns>取得コメントのリスト</returns>
+        public List<(string, string)> GetComments(GetCommentResponse input)
+        {
+            return input.Comments.Select(x => (id: x.Id, message: x.Message)).ToList();
+        }
+
+        /// <summary>
+        /// 取得コメントのリストを取得する
+        /// </summary>
+        /// <returns>取得コメントのリスト</returns>
+        public List<(string, string)> GetComments(int limit = 10)
+        {
+            var response = GetResponse(limit);
+            return response.Comments.Select(x => (id: x.Id, message: x.Message)).ToList();
+        }
+
+        /// <summary>
+        /// 取得コメントを保存する
+        /// </summary>
+        /// <param name="input">取得コメント</param>
+        public void SaveComments(List<(string, string)> input)
+        {
+            Comments.AddRange(input);
+            Comments = Comments.Distinct().ToList();
+        }
+
+        /// <summary>
+        /// キーワードが存在するか
+        /// </summary>
+        /// <param name="list">取得コメントのリスト</param>
+        /// <param name="keyword">キーワード</param>
+        /// <returns>存在するか</returns>
+        public bool Contains(IEnumerable<(string id, string message)> list, string keyword)
+        {
+            return list.Any(x => x.message.Contains(keyword));
+        }
+
+        /// <summary>
+        /// 保存済みコメントを取得する
+        /// </summary>
+        /// <returns>保存済みコメント</returns>
+        public List<(string, string)> GetSaveComments()
+        {
+            return Comments;
         }
     }
 }

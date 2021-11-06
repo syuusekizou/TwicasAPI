@@ -95,9 +95,18 @@ namespace TwicasAPI.v2.api
         /// <typeparam name="T">WebAPIのレスポンスクラス</typeparam>
         /// <param name="response">HTTPレスポンス</param>
         /// <returns>WebAPIのレスポンス</returns>
-        protected static T GetResponseObject<T>(HttpResponseMessage response)
+        protected static T Deserialize<T>(HttpResponseMessage response)
         {
             return JsonSerializer.Deserialize<T>(response.Content.ReadAsStringAsync().Result);
+        }
+
+        /// <summary>
+        /// 設定情報を取得
+        /// </summary>
+        /// <returns>設定情報</returns>
+        public Config GetConfig()
+        {
+            return Config;
         }
     }
 }

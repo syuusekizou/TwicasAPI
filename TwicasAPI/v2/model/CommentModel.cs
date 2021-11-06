@@ -80,4 +80,26 @@ namespace TwicasAPI.v2.model
         [JsonPropertyName("comment_id")]
         public string CommentId { get; set; }
     }
+
+    public class GetCommentResponse
+    {
+        /// <summary>
+        /// ライブID
+        /// </summary>
+        [JsonPropertyName("movie_id")]
+        public string MovieId { get; set; }
+
+        /// <summary>
+        /// 総コメント数
+        /// </summary>
+        [JsonPropertyName("all_count")]
+        public int AllCount { get; set; }
+
+        /// <summary>
+        /// Commentオブジェクトの配列
+        /// </summary>
+        [JsonPropertyName("comments")]
+        public List<Comment> Comments { get; set; }
+    }
+
 }

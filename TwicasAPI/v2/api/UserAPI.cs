@@ -23,7 +23,7 @@ namespace TwicasAPI.v2.api
                 Config = base.Config
             };
             var result = SendRequest(param);
-            return GetResponseObject<UserModel>(result);
+            return Deserialize<UserModel>(result);
         }
 
         /// <summary>

@@ -31,6 +31,11 @@ namespace TwicasAPI.v2.api
         public List<string> Comment { get; set; }
 
         /// <summary>
+        /// キーワードの一覧
+        /// </summary>
+        public Dictionary<string, string> Keyword { get; set; }
+
+        /// <summary>
         /// アプリケーションのClientId
         /// </summary>
         public string ClientId
@@ -65,6 +70,10 @@ namespace TwicasAPI.v2.api
 
             UserId = config[USER_ID];
             AccessTokenBearer = new List<string>(GetList(config, ACCESS_TOKEN_BEARER));
+            var work = config.GetSection("keyword").AsEnumerable()
+                .Where(x => x.Value != null)
+                .Select(x => (x.Key.Replace("keyword:", string.Empty), x.Value));
+            Keyword = work?.ToDictionary(x => x.Item1, x => x.Value);
 
             //投稿コメントをシャッフル
             var list = new List<string>(GetList(config, COMMENT));
