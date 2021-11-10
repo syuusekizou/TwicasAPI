@@ -3,7 +3,7 @@ using System.Net.Http;
 
 namespace TwicasAPI.v2.model
 {
-    class TwicasException : Exception
+    public class TwicasException : Exception
     {
         /// <summary>
         /// HTTPレスポンス

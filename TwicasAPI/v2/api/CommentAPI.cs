@@ -113,7 +113,7 @@ namespace TwicasAPI.v2.api
         /// ランダムな文字を取得
         /// </summary>
         /// <returns>ランダムな文字</returns>
-        private string GetRandom()
+        public string GetRandom()
         {
             var list = new List<string>() { ".", " ", "_", ",", "-", "`", ";", ":" };
             var index = new Random().Next(0, list.Count);
@@ -203,7 +203,7 @@ namespace TwicasAPI.v2.api
         /// <param name="input">コメントオブジェクト</param>
         public void SaveComments(Comment input)
         {
-            Comments.Add((input.Id,input.Message));
+            Comments.Add((input.Id, input.Message));
             Comments = Comments.Distinct().ToList();
         }
 
