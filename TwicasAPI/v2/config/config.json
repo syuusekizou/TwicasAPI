@@ -1,6 +1,9 @@
 {
-  "user_id": "",
   "access_token_bearer": [ "" ],
+  "user_id": "",
   "comment": [ "" ],
-  "keyword": { "": "" }
+  "keyword": {
+    "key1": [ "", "", "" ],
+    "key2": [ "" ]
+  }
 }

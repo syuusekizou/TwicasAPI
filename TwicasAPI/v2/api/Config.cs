@@ -9,9 +9,10 @@ namespace TwicasAPI.v2.api
     public class Config
     {
         #region 定数
-        const string USER_ID = "user_id";
-        const string ACCESS_TOKEN_BEARER = "access_token_bearer";
-        const string COMMENT = "comment";
+        const string SectionUserID = "user_id";
+        const string SectionAccessTokenBearer = "access_token_bearer";
+        const string SectionComment = "comment";
+        const string SectionKeyword = "keyword";
         #endregion
 
         #region プロパティ
@@ -33,7 +34,7 @@ namespace TwicasAPI.v2.api
         /// <summary>
         /// キーワードの一覧
         /// </summary>
-        public Dictionary<string, string> Keyword { get; set; }
+        public Dictionary<string, List<string>> Keyword { get; set; }
 
         /// <summary>
         /// アプリケーションのClientId
@@ -68,15 +69,12 @@ namespace TwicasAPI.v2.api
             var builder = new ConfigurationBuilder().AddJsonFile(path);
             var config = builder.Build();
 
-            UserId = config[USER_ID];
-            AccessTokenBearer = new List<string>(GetList(config, ACCESS_TOKEN_BEARER));
-            var work = config.GetSection("keyword").AsEnumerable()
-                .Where(x => x.Value != null)
-                .Select(x => (x.Key.Replace("keyword:", string.Empty), x.Value));
-            Keyword = work?.ToDictionary(x => x.Item1, x => x.Value);
+            UserId = config[SectionUserID];
+            AccessTokenBearer = new List<string>(GetList(config, SectionAccessTokenBearer));
+            Keyword = GetKeyword(config);
 
             //投稿コメントをシャッフル
-            var list = new List<string>(GetList(config, COMMENT));
+            var list = new List<string>(GetList(config, SectionComment));
             Comment = GetShuffle(list);
         }
         #endregion
@@ -115,6 +113,25 @@ namespace TwicasAPI.v2.api
                 var index = random.Next(0, work.Count);
                 result.Add(work[index]);
                 work.RemoveAt(index);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// コメントBOT用のキーワード取得
+        /// </summary>
+        /// <param name="config">アプリ設定</param>
+        /// <returns>キーワード</returns>
+        private Dictionary<string, List<string>> GetKeyword(IConfigurationRoot config)
+        {
+            var result = new Dictionary<string, List<string>>();
+            var section = config.GetSection(SectionKeyword);
+            var keys = section.GetChildren().AsEnumerable().Select(x => x.Key);
+            foreach (var key in keys)
+            {
+                var value = section.GetSection(key).GetChildren().AsEnumerable()
+                            .Select(x => x.Value).ToList();
+                result.Add(key, value);
             }
             return result;
         }
