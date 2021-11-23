@@ -70,12 +70,12 @@ namespace TwicasAPI.v2.api
             var config = builder.Build();
 
             UserId = config[SectionUserID];
-            AccessTokenBearer = new List<string>(GetList(config, SectionAccessTokenBearer));
+            AccessTokenBearer = GetList(config, SectionAccessTokenBearer);
             Keyword = GetKeyword(config);
 
             //投稿コメントをシャッフル
-            var list = new List<string>(GetList(config, SectionComment));
-            Comment = GetShuffle(list);
+            var list = GetList(config, SectionComment);
+            Comment = GetShuffle(list).ToList();
         }
         #endregion
 
@@ -87,15 +87,8 @@ namespace TwicasAPI.v2.api
         /// <returns></returns>
         private List<string> GetList(IConfigurationRoot config, string key)
         {
-            var result = new List<string>(
-                config.AsEnumerable()
-                .Where(x => x.Value != null)
-                .OrderBy(x => x.Key)
-                .Where(x => x.Key.Contains(key))
-                .Select(x => x.Value)
-            );
-
-            return result;
+            return config.GetSection(key).GetChildren().AsEnumerable()
+                        .Select(x => x.Value).ToList();
         }
 
         /// <summary>
@@ -103,18 +96,16 @@ namespace TwicasAPI.v2.api
         /// </summary>
         /// <param name="input"></param>
         /// <returns>シャッフルした配列</returns>
-        private List<string> GetShuffle(List<string> input)
+        private IEnumerable<string> GetShuffle(List<string> input)
         {
-            var result = new List<string>();
             var random = new Random();
             var work = new List<string>(input);
             while (work.Count > 0)
             {
                 var index = random.Next(0, work.Count);
-                result.Add(work[index]);
+                yield return work[index];
                 work.RemoveAt(index);
             }
-            return result;
         }
 
         /// <summary>
